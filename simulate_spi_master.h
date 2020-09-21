@@ -4,8 +4,8 @@
  * @Email: huangmailbox@126.com
  * @Version: 
  * @Date: 2020-09-20 22:30:09
- * @LastEditors: Huang
- * @LastEditTime: 2020-09-20 23:48:33
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2020-09-21 14:52:40
  */
 #ifndef __SIMULATE_SPI_MASTER_H_
 #define __SIMULATE_SPI_MASTER_H_
@@ -14,25 +14,18 @@
 
 // 电平跳变的延时函数
 #define SIMULATE_SPI_DELAY(time)
-
-// 由于需要通过通过上拉获取输入，建议引脚设为开漏上拉
-
-// CPOL:时钟极性: SCLK 空闲电平
-//     CPOL=0，表示当 SCLK=0 时处于空闲态，所以有效状态就是SCLK处于高电平时
-//     CPOL=1，表示当 SCLK=1 时处于空闲态，所以有效状态就是SCLK处于低电平时
-// CPHA:时钟相位: 数据采样在第几个边沿
-//     CPHA=0，表示数据采样是在第1个边沿，数据发送在第2个边沿
-//     CPHA=1，表示数据采样是在第2个边沿，数据发送在第1个边沿
-
-// Mode0：CPOL=0，CPHA=0
-// Mode1：CPOL=0，CPHA=1
-// Mode2：CPOL=1，CPHA=0
-// Mode3：CPOL=1，CPHA=1
+// 内存堆申请函数
+#define SIMULATE_SPI_MALLOC(size) malloc((size))
+// 内存堆释放函数
+#define SIMULATE_SPI_FREE(mem) free((mem))
 
 #define SIMULATE_SPI_MODE_0 (0X0)
-#define SIMULATE_SPI_MODE_0 (0x1)
-#define SIMULATE_SPI_MODE_0 (0x2)
-#define SIMULATE_SPI_MODE_0 (0x3)
+#define SIMULATE_SPI_MODE_1 (0x1)
+#define SIMULATE_SPI_MODE_2 (0x2)
+#define SIMULATE_SPI_MODE_3 (0x3)
+
+#define GPIO_PIN_SET (1)
+#define GPIO_PIN_RESET (0)
 
 typedef void (*simulate_gpio_set_t)(uint8_t *);
 typedef uint8_t (*simulate_gpio_get_t)(void);
@@ -56,6 +49,21 @@ typedef struct
     uint32_t wait_time;
 } simulate_spi_t;
 
+/**
+ * @description: 初始化一个模拟 SPI 控制块
+ * @param hand 模拟 SPI 控制块
+ *        spi_mode SPI 工作模式
+ *          SIMULATE_SPI_MODE_0
+            SIMULATE_SPI_MODE_1
+            SIMULATE_SPI_MODE_2
+            SIMULATE_SPI_MODE_3
+          sdi_get 输入引脚电平获取函数
+          sdo_set 输出引脚电平设置函数
+          sclk_set 时钟引脚电平设置函数
+          hold_time 数据保持时间
+          wait_time 等待数据生成时间
+ * @return 模拟 SPI 控制块指针
+ */
 simulate_spi_t *simulate_spi_init(simulate_spi_t *hand,
                                   uint8_t spi_mode,
                                   simulate_gpio_get_t sdi_get,
@@ -63,6 +71,21 @@ simulate_spi_t *simulate_spi_init(simulate_spi_t *hand,
                                   simulate_gpio_set_t sclk_set,
                                   uint32_t hold_time,
                                   uint32_t wait_time);
+/**
+ * @description: 创建一个模拟 SPI 控制块(需要配置内存堆接口函数)
+ * @param hand 模拟 SPI 控制块
+ *        spi_mode SPI 工作模式
+ *          SIMULATE_SPI_MODE_0
+            SIMULATE_SPI_MODE_1
+            SIMULATE_SPI_MODE_2
+            SIMULATE_SPI_MODE_3
+          sdi_get 输入引脚电平获取函数
+          sdo_set 输出引脚电平设置函数
+          sclk_set 时钟引脚电平设置函数
+          hold_time 数据保持时间
+          wait_time 等待数据生成时间
+ * @return 模拟 SPI 控制块指针
+ */
 simulate_spi_t *simulate_spi_create(uint8_t spi_mode,
                                     simulate_gpio_get_t sdi_get,
                                     simulate_gpio_set_t sdo_set,
@@ -70,10 +93,30 @@ simulate_spi_t *simulate_spi_create(uint8_t spi_mode,
                                     uint32_t hold_time,
                                     uint32_t wait_time);
 
+/**
+ * @description: 还原一个模拟 SPI 控制块
+ * @param hand 模拟 SPI 控制块
+ */
 void simulate_spi_deinit(simulate_spi_t *hand);
+/**
+ * @description: 销毁释放一个模拟 SPI 控制块
+ * @param hand 模拟 SPI 控制块
+ */
 void simulate_spi_destory(simulate_spi_t *hand);
 
-void simulate_spi_transfer_byte(simulate_spi_t *hand, uint8_t dat);
-uint8_t simulate_spi_recive_byte(simulate_spi_t *hand, uint8_t dat);
+/**
+ * @description: 发送一个字节
+ * @param hand 模拟 SPI 控制块
+ *        dat 发送的数据
+ * @return 成功返回 0, 失败返回非 0  
+ */
+uint8_t simulate_spi_transf_byte(simulate_spi_t *hand, uint8_t dat);
+
+/**
+ * @description: 
+ * @param hand 模拟 SPI 控制块
+ * @return 接收到的数据,如果数据有误，返回 0 
+ */
+uint8_t simulate_spi_recive_byte(simulate_spi_t *hand);
 
 #endif /* __SIMULATE_SPI_MASTER_H_ */
