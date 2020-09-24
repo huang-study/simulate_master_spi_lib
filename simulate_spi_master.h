@@ -4,13 +4,24 @@
  * @Email: huangmailbox@126.com
  * @Version: 
  * @Date: 2020-09-20 22:30:09
- * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-09-21 14:52:40
+ * @LastEditors: Huang
+ * @LastEditTime: 2020-09-24 23:14:25
  */
 #ifndef __SIMULATE_SPI_MASTER_H_
 #define __SIMULATE_SPI_MASTER_H_
 
 #include "stdint.h"
+
+#define IS_NULL(p, ret) \
+    if (NULL == p)      \
+    {                   \
+        return (ret);   \
+    }
+#define IS_ZERO(val, ret) \
+    if (0 == val)         \
+    {                     \
+        return (ret);     \
+    }
 
 // 电平跳变的延时函数
 #define SIMULATE_SPI_DELAY(time)
@@ -24,8 +35,12 @@
 #define SIMULATE_SPI_MODE_2 (0x2)
 #define SIMULATE_SPI_MODE_3 (0x3)
 
+#ifndef GPIO_PIN_SET
 #define GPIO_PIN_SET (1)
+#endif
+#ifndef GPIO_PIN_RESET
 #define GPIO_PIN_RESET (0)
+#endif
 
 typedef void (*simulate_gpio_set_t)(uint8_t *);
 typedef uint8_t (*simulate_gpio_get_t)(void);
@@ -105,18 +120,11 @@ void simulate_spi_deinit(simulate_spi_t *hand);
 void simulate_spi_destory(simulate_spi_t *hand);
 
 /**
- * @description: 发送一个字节
+ * @description: 发送，读取一个字节
  * @param hand 模拟 SPI 控制块
  *        dat 发送的数据
  * @return 成功返回 0, 失败返回非 0  
  */
-uint8_t simulate_spi_transf_byte(simulate_spi_t *hand, uint8_t dat);
-
-/**
- * @description: 
- * @param hand 模拟 SPI 控制块
- * @return 接收到的数据,如果数据有误，返回 0 
- */
-uint8_t simulate_spi_recive_byte(simulate_spi_t *hand);
+uint8_t simulate_spi_read_write_byte(simulate_spi_t *hand, uint8_t dat);
 
 #endif /* __SIMULATE_SPI_MASTER_H_ */
