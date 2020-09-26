@@ -141,7 +141,14 @@ uint8_t simulate_spi_read_write_byte(simulate_spi_t *hand, uint8_t dat)
         //start
         for (i = 0; i < 8; i++)
         {
-            rxdata <<= 1;
+            // 设置 bit
+            if (dat & 0x80)
+                hand->sdo_set(GPIO_PIN_SET);
+            else
+                hand->sdo_set(GPIO_PIN_RESET);
+            dat <<= 1;
+            SIMULATE_SPI_DELAY(hand->hold_time);
+            
             // 电平跳转，等待数据
             if (hand->spi_mode & 0x2)
             {
@@ -153,17 +160,11 @@ uint8_t simulate_spi_read_write_byte(simulate_spi_t *hand, uint8_t dat)
             }
             SIMULATE_SPI_DELAY(hand->wait_time);
 
+            rxdata <<= 1;
             if (GPIO_PIN_SET == hand->sdi_get())
                 rxdata |= 0x01;
             else
                 rxdata &= 0xfe;
-
-            // 设置 bit
-            if (dat & 0x80)
-                hand->sdo_set(GPIO_PIN_SET);
-            else
-                hand->sdo_set(GPIO_PIN_RESET);
-            SIMULATE_SPI_DELAY(hand->hold_time);
 
             // 电平跳转，发送 bit
             if (hand->spi_mode & 0x2)
@@ -174,7 +175,6 @@ uint8_t simulate_spi_read_write_byte(simulate_spi_t *hand, uint8_t dat)
             {
                 hand->sclk_set(GPIO_PIN_RESET);
             }
-            dat <<= 1;
             //end sck
         }
     }
